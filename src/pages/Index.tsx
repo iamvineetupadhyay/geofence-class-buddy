@@ -1,23 +1,44 @@
 import { useState } from "react";
 import AttendMateHero from "@/components/AttendMateHero";
 import RoleSelector from "@/components/RoleSelector";
-import StudentDashboard from "@/components/StudentDashboard";
+import LoginForm from "@/components/LoginForm";
+import StudentDashboardConnected from "@/components/StudentDashboardConnected";
 import TeacherDashboard from "@/components/TeacherDashboard";
 import AdminDashboard from "@/components/AdminDashboard";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState<'hero' | 'role-selector' | 'student' | 'teacher' | 'admin'>('hero');
+  const { user } = useAuth();
+  const [currentView, setCurrentView] = useState<'hero' | 'role-selector' | 'login' | 'student' | 'teacher' | 'admin'>('hero');
 
   const handleGetStarted = () => {
-    setCurrentView('role-selector');
+    if (user) {
+      // If user is logged in, go directly to their dashboard
+      setCurrentView(user.role);
+    } else {
+      // If not logged in, show role selector or login
+      setCurrentView('role-selector');
+    }
   };
 
   const handleRoleSelect = (role: 'student' | 'teacher' | 'admin') => {
-    setCurrentView(role);
+    if (user && user.role === role) {
+      // If user is logged in with matching role, go to dashboard
+      setCurrentView(role);
+    } else {
+      // If not logged in or role mismatch, show login
+      setCurrentView('login');
+    }
   };
 
   const handleBackToHome = () => {
     setCurrentView('hero');
+  };
+
+  const handleLoginSuccess = () => {
+    if (user) {
+      setCurrentView(user.role);
+    }
   };
 
   if (currentView === 'hero') {
@@ -29,11 +50,15 @@ const Index = () => {
   }
 
   if (currentView === 'role-selector') {
-    return <RoleSelector onRoleSelect={handleRoleSelect} />;
+    return <RoleSelector onRoleSelect={handleRoleSelect} onBackToHome={handleBackToHome} />;
+  }
+
+  if (currentView === 'login') {
+    return <LoginForm onSuccess={handleLoginSuccess} onBack={handleBackToHome} />;
   }
 
   if (currentView === 'student') {
-    return <StudentDashboard />;
+    return <StudentDashboardConnected />;
   }
 
   if (currentView === 'teacher') {

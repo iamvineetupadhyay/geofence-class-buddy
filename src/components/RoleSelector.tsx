@@ -4,9 +4,10 @@ import { GraduationCap, BookOpen, Settings } from "lucide-react";
 
 interface RoleSelectorProps {
   onRoleSelect: (role: 'student' | 'teacher' | 'admin') => void;
+  onBackToHome?: () => void;
 }
 
-const RoleSelector = ({ onRoleSelect }: RoleSelectorProps) => {
+const RoleSelector = ({ onRoleSelect, onBackToHome }: RoleSelectorProps) => {
   const roles = [
     {
       id: 'student' as const,
@@ -87,7 +88,11 @@ const RoleSelector = ({ onRoleSelect }: RoleSelectorProps) => {
         </div>
 
         <div className="text-center mt-12">
-          <Button variant="outline" className="text-lg px-8 border-2">
+          <Button 
+            variant="outline" 
+            className="text-lg px-8 border-2"
+            onClick={onBackToHome}
+          >
             Back to Home
           </Button>
         </div>
