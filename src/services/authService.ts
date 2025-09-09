@@ -23,7 +23,7 @@ export interface AuthResponse {
 class AuthService {
   async login(credentials: LoginCredentials): Promise<ApiResponse<AuthResponse>> {
     const response = await apiCall<AuthResponse>(
-      '/login',
+      '/auth/login',  // ✅ updated endpoint
       {
         method: 'POST',
         body: JSON.stringify(credentials),
@@ -41,7 +41,7 @@ class AuthService {
 
   async register(userData: RegisterData): Promise<ApiResponse<AuthResponse>> {
     const response = await apiCall<AuthResponse>(
-      '/register',
+      '/auth/signup',  // ✅ updated endpoint
       {
         method: 'POST',
         body: JSON.stringify(userData),
