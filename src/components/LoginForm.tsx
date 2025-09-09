@@ -3,7 +3,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { Eye, EyeOff, Mail, Lock, User, Phone, Hash } from "lucide-react";
@@ -16,33 +22,64 @@ interface LoginFormProps {
 const LoginForm = ({ onSuccess, onBack }: LoginFormProps) => {
   const { login, register, loading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
   });
+
   const [registerData, setRegisterData] = useState({
     name: "",
     email: "",
     password: "",
     phone: "",
     institution_id: "",
-    role: "student" as 'student' | 'teacher' | 'admin',
+    role: "student" as "student" | "teacher" | "admin",
     class_id: undefined as number | undefined,
   });
 
+  // ---------------- LOGIN ----------------
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await login(loginData);
-    if (result.success) {
-      onSuccess();
+    try {
+      console.log("Login payload:", loginData);
+      const result = await login(loginData);
+
+      if (result.success) {
+        console.log("Login successful");
+        onSuccess();
+      } else {
+        console.error("Login failed:", result.error ?? "Unknown error");
+        alert("Login failed: " + (result.error ?? "Unknown error"));
+      }
+    } catch (err) {
+      console.error("Unexpected error during login:", err);
+      alert("Unexpected error: " + (err instanceof Error ? err.message : String(err)));
     }
   };
 
+  // ---------------- REGISTER ----------------
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await register(registerData);
-    if (result.success) {
-      onSuccess();
+
+    // Clear old token to avoid 403
+    localStorage.removeItem("attendmate_token");
+    localStorage.removeItem("attendmate_user");
+
+    try {
+      console.log("Register payload:", registerData);
+      const result = await register(registerData);
+
+      if (result.success) {
+        console.log("Registration successful");
+        onSuccess();
+      } else {
+        console.error("Registration failed:", result.error ?? "Unknown error");
+        alert("Registration failed: " + (result.error ?? "Unknown error"));
+      }
+    } catch (err) {
+      console.error("Unexpected error during registration:", err);
+      alert("Unexpected error: " + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -60,6 +97,7 @@ const LoginForm = ({ onSuccess, onBack }: LoginFormProps) => {
             <TabsTrigger value="register">Register</TabsTrigger>
           </TabsList>
 
+          {/* ---------- LOGIN FORM ---------- */}
           <TabsContent value="login">
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
@@ -72,7 +110,9 @@ const LoginForm = ({ onSuccess, onBack }: LoginFormProps) => {
                     placeholder="Enter your email"
                     className="pl-10"
                     value={loginData.email}
-                    onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                    onChange={(e) =>
+                      setLoginData({ ...loginData, email: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -88,7 +128,9 @@ const LoginForm = ({ onSuccess, onBack }: LoginFormProps) => {
                     placeholder="Enter your password"
                     className="pl-10 pr-10"
                     value={loginData.password}
-                    onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                    onChange={(e) =>
+                      setLoginData({ ...loginData, password: e.target.value })
+                    }
                     required
                   />
                   <Button
@@ -103,16 +145,13 @@ const LoginForm = ({ onSuccess, onBack }: LoginFormProps) => {
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full bg-gradient-primary hover:opacity-90" 
-                disabled={loading}
-              >
+              <Button type="submit" className="w-full bg-gradient-primary" disabled={loading}>
                 {loading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
           </TabsContent>
 
+          {/* ---------- REGISTER FORM ---------- */}
           <TabsContent value="register">
             <form onSubmit={handleRegister} className="space-y-4">
               <div className="space-y-2">
@@ -125,7 +164,9 @@ const LoginForm = ({ onSuccess, onBack }: LoginFormProps) => {
                     placeholder="Enter your full name"
                     className="pl-10"
                     value={registerData.name}
-                    onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
+                    onChange={(e) =>
+                      setRegisterData({ ...registerData, name: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -141,7 +182,9 @@ const LoginForm = ({ onSuccess, onBack }: LoginFormProps) => {
                     placeholder="Enter your email"
                     className="pl-10"
                     value={registerData.email}
-                    onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                    onChange={(e) =>
+                      setRegisterData({ ...registerData, email: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -157,7 +200,9 @@ const LoginForm = ({ onSuccess, onBack }: LoginFormProps) => {
                     placeholder="Enter your phone number"
                     className="pl-10"
                     value={registerData.phone}
-                    onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })}
+                    onChange={(e) =>
+                      setRegisterData({ ...registerData, phone: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -173,7 +218,9 @@ const LoginForm = ({ onSuccess, onBack }: LoginFormProps) => {
                     placeholder="Student/Employee ID"
                     className="pl-10"
                     value={registerData.institution_id}
-                    onChange={(e) => setRegisterData({ ...registerData, institution_id: e.target.value })}
+                    onChange={(e) =>
+                      setRegisterData({ ...registerData, institution_id: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -181,9 +228,9 @@ const LoginForm = ({ onSuccess, onBack }: LoginFormProps) => {
 
               <div className="space-y-2">
                 <Label htmlFor="role">Role</Label>
-                <Select 
-                  value={registerData.role} 
-                  onValueChange={(value: 'student' | 'teacher' | 'admin') => 
+                <Select
+                  value={registerData.role}
+                  onValueChange={(value: "student" | "teacher" | "admin") =>
                     setRegisterData({ ...registerData, role: value })
                   }
                 >
@@ -198,7 +245,7 @@ const LoginForm = ({ onSuccess, onBack }: LoginFormProps) => {
                 </Select>
               </div>
 
-              {registerData.role === 'student' && (
+              {registerData.role === "student" && (
                 <div className="space-y-2">
                   <Label htmlFor="class_id">Class ID (Optional)</Label>
                   <Input
@@ -206,10 +253,12 @@ const LoginForm = ({ onSuccess, onBack }: LoginFormProps) => {
                     type="number"
                     placeholder="Enter class ID"
                     value={registerData.class_id || ""}
-                    onChange={(e) => setRegisterData({ 
-                      ...registerData, 
-                      class_id: e.target.value ? parseInt(e.target.value) : undefined 
-                    })}
+                    onChange={(e) =>
+                      setRegisterData({
+                        ...registerData,
+                        class_id: e.target.value ? parseInt(e.target.value) : undefined,
+                      })
+                    }
                   />
                 </div>
               )}
@@ -224,7 +273,9 @@ const LoginForm = ({ onSuccess, onBack }: LoginFormProps) => {
                     placeholder="Create a password"
                     className="pl-10 pr-10"
                     value={registerData.password}
-                    onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                    onChange={(e) =>
+                      setRegisterData({ ...registerData, password: e.target.value })
+                    }
                     required
                   />
                   <Button
@@ -239,9 +290,9 @@ const LoginForm = ({ onSuccess, onBack }: LoginFormProps) => {
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full bg-gradient-secondary hover:opacity-90" 
+              <Button
+                type="submit"
+                className="w-full bg-gradient-secondary"
                 disabled={loading}
               >
                 {loading ? "Creating account..." : "Create Account"}
