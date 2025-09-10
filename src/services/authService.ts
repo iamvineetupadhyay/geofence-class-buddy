@@ -74,7 +74,16 @@ class AuthService {
 
   getCurrentUser(): User | null {
     const userStr = localStorage.getItem('attendmate_user');
-    return userStr ? JSON.parse(userStr) : null;
+    if (!userStr || userStr === 'undefined' || userStr === 'null') {
+      return null;
+    }
+    try {
+      return JSON.parse(userStr);
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+      localStorage.removeItem('attendmate_user');
+      return null;
+    }
   }
 
   getToken(): string | null {
