@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AttendMateHero from "@/components/AttendMateHero";
 import RoleSelector from "@/components/RoleSelector";
 import LoginForm from "@/components/LoginForm";
@@ -10,6 +10,15 @@ import { useAuth } from "@/hooks/useAuth";
 const Index = () => {
   const { user } = useAuth();
   const [currentView, setCurrentView] = useState<'hero' | 'role-selector' | 'login' | 'student' | 'teacher' | 'admin'>('hero');
+
+  // Clear any invalid localStorage data on component mount
+  useEffect(() => {
+    const userStr = localStorage.getItem('attendmate_user');
+    if (userStr === 'undefined' || userStr === 'null') {
+      localStorage.removeItem('attendmate_user');
+      localStorage.removeItem('attendmate_token');
+    }
+  }, []);
 
   const handleGetStarted = () => {
     if (user) {
@@ -38,9 +47,14 @@ const Index = () => {
   const handleLoginSuccess = () => {
     // Get the fresh user data from localStorage since state might not be updated yet
     const userStr = localStorage.getItem('attendmate_user');
-    if (userStr) {
-      const userData = JSON.parse(userStr);
-      setCurrentView(userData.role);
+    if (userStr && userStr !== 'undefined' && userStr !== 'null') {
+      try {
+        const userData = JSON.parse(userStr);
+        setCurrentView(userData.role);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('attendmate_user');
+      }
     }
   };
 
