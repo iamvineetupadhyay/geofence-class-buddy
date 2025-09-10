@@ -35,7 +35,7 @@ class AuthService {
       // Store the token
       localStorage.setItem('attendmate_token', response.data.authToken);
       
-      // Get user profile with the new token
+      // Try to get user profile, but don't fail login if it doesn't work
       try {
         const profileResponse = await this.getProfile();
         if (profileResponse.success && profileResponse.data) {
@@ -49,8 +49,30 @@ class AuthService {
           };
         }
       } catch (error) {
-        console.error('Failed to get profile after login:', error);
+        console.log('Profile fetch failed, continuing with token only:', error);
       }
+      
+      // If profile fetch fails, create a basic user object
+      const basicUser = {
+        id: 0,
+        name: 'User',
+        email: credentials.email,
+        role: 'student' as const,
+        phone: '',
+        institution_id: '',
+        class_id: undefined,
+        created_at: new Date().toISOString(),
+        active: true
+      };
+      
+      localStorage.setItem('attendmate_user', JSON.stringify(basicUser));
+      return {
+        success: true,
+        data: {
+          user: basicUser,
+          token: response.data.authToken
+        }
+      };
     }
 
     return {
