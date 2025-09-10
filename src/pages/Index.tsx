@@ -45,17 +45,21 @@ const Index = () => {
   };
 
   const handleLoginSuccess = () => {
-    // Get the fresh user data from localStorage since state might not be updated yet
-    const userStr = localStorage.getItem('attendmate_user');
-    if (userStr && userStr !== 'undefined' && userStr !== 'null') {
-      try {
-        const userData = JSON.parse(userStr);
-        setCurrentView(userData.role);
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-        localStorage.removeItem('attendmate_user');
+    // Force a small delay to ensure localStorage is updated
+    setTimeout(() => {
+      const userStr = localStorage.getItem('attendmate_user');
+      if (userStr && userStr !== 'undefined' && userStr !== 'null') {
+        try {
+          const userData = JSON.parse(userStr);
+          if (userData?.role) {
+            setCurrentView(userData.role);
+          }
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          localStorage.removeItem('attendmate_user');
+        }
       }
-    }
+    }, 100);
   };
 
   if (currentView === 'hero') {
