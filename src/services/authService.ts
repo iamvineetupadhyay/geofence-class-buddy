@@ -22,8 +22,8 @@ export interface AuthResponse {
 
 class AuthService {
   async login(credentials: LoginCredentials): Promise<ApiResponse<AuthResponse>> {
-    const response = await apiCall<AuthResponse>(
-      '/auth/login',  // ✅ updated endpoint
+    const response = await apiCall<{authToken: string}>(
+      '/auth/login',
       {
         method: 'POST',
         body: JSON.stringify(credentials),
@@ -31,12 +31,32 @@ class AuthService {
       true // Use auth API
     );
 
-    if (response.success && response.data) {
-      localStorage.setItem('attendmate_token', response.data.token);
-      localStorage.setItem('attendmate_user', JSON.stringify(response.data.user));
+    if (response.success && response.data?.authToken) {
+      // Store the token
+      localStorage.setItem('attendmate_token', response.data.authToken);
+      
+      // Get user profile with the new token
+      try {
+        const profileResponse = await this.getProfile();
+        if (profileResponse.success && profileResponse.data) {
+          localStorage.setItem('attendmate_user', JSON.stringify(profileResponse.data));
+          return {
+            success: true,
+            data: {
+              user: profileResponse.data,
+              token: response.data.authToken
+            }
+          };
+        }
+      } catch (error) {
+        console.error('Failed to get profile after login:', error);
+      }
     }
 
-    return response;
+    return {
+      success: false,
+      error: response.error || 'Login failed'
+    };
   }
 
   async register(userData: RegisterData): Promise<ApiResponse<AuthResponse>> {
