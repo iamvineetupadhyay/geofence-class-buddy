@@ -22,7 +22,7 @@ export const useAuth = () => {
         setUser(response.data.user);
         toast({
           title: "Welcome back!",
-          description: `Logged in as ${response.data.user.name}`,
+          description: `Logged in as ${response.data.user?.name || 'User'}`,
         });
         return { success: true };
       } else {
@@ -54,7 +54,7 @@ export const useAuth = () => {
         setUser(response.data.user);
         toast({
           title: "Registration successful!",
-          description: `Welcome to AttendMate, ${response.data.user.name}!`,
+          description: `Welcome to AttendMate, ${response.data.user?.name || 'User'}!`,
         });
         return { success: true };
       } else {
