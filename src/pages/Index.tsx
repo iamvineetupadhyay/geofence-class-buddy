@@ -36,8 +36,11 @@ const Index = () => {
   };
 
   const handleLoginSuccess = () => {
-    if (user) {
-      setCurrentView(user.role);
+    // Get the fresh user data from localStorage since state might not be updated yet
+    const userStr = localStorage.getItem('attendmate_user');
+    if (userStr) {
+      const userData = JSON.parse(userStr);
+      setCurrentView(userData.role);
     }
   };
 
