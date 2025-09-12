@@ -36,7 +36,7 @@ Manual attendance wastes precious classroom time, is error-prone, and allows pro
 
 | Login & Signup | Student Dashboard | Teacher Dashboard | Admin Dashboard |
 |----------------|------------------|------------------|----------------|
-| ![Login](./assets/screens/login.png) | ![Student](./assets/screens/student.png) | ![Teacher](./assets/screens/teacher.png) | ![Admin](./assets/screens/admin.png) |
+| ![Login](./assets/login.png) | ![Student](./assets/student.png) | ![Teacher](./assets/teacher.png) | ![Admin](./assets/admin.png) |
 
 *(Add your own prototype images/screenshots here)*  
 
