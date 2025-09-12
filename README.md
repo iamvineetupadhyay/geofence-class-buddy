@@ -1,73 +1,60 @@
-# Welcome to your Lovable project
+# 📌 AttendMate – Smart Geofencing Attendance & Classroom Management
 
-## Project info
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=vercel)](https://pragyasetu-attendmate.vercel.app/)
+[![Built With](https://img.shields.io/badge/Built_with-Firebase-blue?style=for-the-badge&logo=firebase)](https://firebase.google.com/)
+[![License](https://img.shields.io/badge/License-MIT-lightgrey?style=for-the-badge)](LICENSE)
 
-**URL**: https://lovable.dev/projects/5ea4f81e-2134-45c4-a1f5-df0a3f1b46ac
+> 🚀 **AttendMate** is a contact-free, geofencing-based attendance system designed for **Smart India Hackathon 2025 (SIH25011)** under the *Smart Education* theme.  
+It automates classroom attendance, prevents proxies, and enhances student engagement with gamification & real-time dashboards.  
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## 📖 Problem Statement
 
-**Use Lovable**
+**SIH 2025 Problem ID:** `SIH25011`  
+**Title:** *Smart Curriculum Activity & Attendance App*  
+**Team:** PragyaSetu  
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/5ea4f81e-2134-45c4-a1f5-df0a3f1b46ac) and start prompting.
+Manual attendance wastes precious classroom time, is error-prone, and allows proxy marking.  
+👉 AttendMate solves this with **geofencing + time validation**, ensuring fairness, saving time, and boosting engagement.
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## ✨ Key Features
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- 📍 **Geofencing Attendance** – Automatic check-in when students enter classroom radius.  
+- ⏱ **Time Validation** – Ensures attendance is only marked during scheduled class hours.  
+- 📊 **Dashboards** – Student, Teacher & Admin views with real-time updates.  
+- 🎮 **Gamification** – Badges, streaks, and leaderboards to motivate students.  
+- 🔔 **Notifications** – Instant alerts for attendance, announcements, and updates.  
+- 📶 **Offline Mode** – Attendance works even with poor connectivity (Firestore caching).  
+- 🔒 **Security** – Explicit user consent & compliance with IT Act/GDPR.  
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+---
 
-Follow these steps:
+## 🖼️ Screenshots (Prototype)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+| Login & Signup | Student Dashboard | Teacher Dashboard | Admin Dashboard |
+|----------------|------------------|------------------|----------------|
+| ![Login](./assets/screens/login.png) | ![Student](./assets/screens/student.png) | ![Teacher](./assets/screens/teacher.png) | ![Admin](./assets/screens/admin.png) |
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+*(Add your own prototype images/screenshots here)*  
 
-# Step 3: Install the necessary dependencies.
-npm i
+---
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+## ⚙️ Tech Stack
 
-**Edit a file directly in GitHub**
+- **Frontend:** React.js / Next.js  
+- **Backend & DB:** Firebase (Auth, Firestore, Realtime DB, Cloud Functions)  
+- **Services:** GPS Geofencing, Notifications  
+- **Hosting:** Vercel + Firebase Hosting  
+- **Development:** Agile cycle – Setup → Core Features → Integrations → Testing → Deployment  
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## 🚀 Getting Started
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/5ea4f81e-2134-45c4-a1f5-df0a3f1b46ac) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+### 1️⃣ Clone the Repository
+```bash
+git clone https://github.com/<your-username>/AttendMate.git
+cd AttendMate
