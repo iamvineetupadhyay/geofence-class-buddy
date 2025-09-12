@@ -5,11 +5,16 @@ import LoginForm from "@/components/LoginForm";
 import StudentDashboardConnected from "@/components/StudentDashboardConnected";
 import TeacherDashboard from "@/components/TeacherDashboard";
 import AdminDashboard from "@/components/AdminDashboard";
+import Navigation from "@/components/Navigation";
+import Profile from "@/pages/Profile";
+import AttendancePage from "@/pages/AttendancePage";
+import NotesPage from "@/pages/NotesPage";
+import LeaderboardPage from "@/pages/LeaderboardPage";
 import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
   const { user } = useAuth();
-  const [currentView, setCurrentView] = useState<'hero' | 'role-selector' | 'login' | 'student' | 'teacher' | 'admin'>('hero');
+  const [currentView, setCurrentView] = useState<string>('hero');
 
   // Clear any invalid localStorage data on component mount
   useEffect(() => {
@@ -33,7 +38,7 @@ const Index = () => {
   const handleRoleSelect = (role: 'student' | 'teacher' | 'admin') => {
     if (user && user.role === role) {
       // If user is logged in with matching role, go to dashboard
-      setCurrentView(role);
+      setCurrentView('home');
     } else {
       // If not logged in or role mismatch, show login
       setCurrentView('login');
@@ -52,7 +57,7 @@ const Index = () => {
         try {
           const userData = JSON.parse(userStr);
           if (userData?.role) {
-            setCurrentView(userData.role);
+            setCurrentView('home');
           }
         } catch (error) {
           console.error('Error parsing user data:', error);
@@ -60,6 +65,10 @@ const Index = () => {
         }
       }
     }, 100);
+  };
+
+  const handleNavigate = (view: string) => {
+    setCurrentView(view);
   };
 
   if (currentView === 'hero') {
@@ -78,16 +87,34 @@ const Index = () => {
     return <LoginForm onSuccess={handleLoginSuccess} onBack={handleBackToHome} />;
   }
 
-  if (currentView === 'student') {
-    return <StudentDashboardConnected />;
-  }
-
-  if (currentView === 'teacher') {
-    return <TeacherDashboard />;
-  }
-
-  if (currentView === 'admin') {
-    return <AdminDashboard />;
+  // If user is logged in, show navigation and appropriate page
+  if (user) {
+    return (
+      <div className="flex min-h-screen">
+        <Navigation currentView={currentView} onNavigate={handleNavigate} />
+        <div className="flex-1 ml-64">
+          {currentView === 'home' && (
+            <>
+              {user.role === 'student' && <StudentDashboardConnected />}
+              {user.role === 'teacher' && <TeacherDashboard />}
+              {user.role === 'admin' && <AdminDashboard />}
+            </>
+          )}
+          {currentView === 'profile' && <Profile />}
+          {currentView === 'attendance' && <AttendancePage />}
+          {currentView === 'notes' && <NotesPage />}
+          {currentView === 'leaderboard' && <LeaderboardPage />}
+          {currentView === 'classes' && <AttendancePage />}
+          {currentView === 'communication' && <div className="p-8">Communication feature coming soon...</div>}
+          {currentView === 'analytics' && <div className="p-8">Analytics feature coming soon...</div>}
+          {currentView === 'users' && <div className="p-8">User management coming soon...</div>}
+          {currentView === 'events' && <div className="p-8">Events feature coming soon...</div>}
+          {currentView === 'settings' && <div className="p-8">Settings coming soon...</div>}
+          {currentView === 'doubts' && <div className="p-8">Doubts feature coming soon...</div>}
+          {currentView === 'faculty' && <div className="p-8">Faculty directory coming soon...</div>}
+        </div>
+      </div>
+    );
   }
 
   return <AttendMateHero />;

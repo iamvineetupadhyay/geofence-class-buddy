@@ -22,7 +22,7 @@ export interface AuthResponse {
 
 class AuthService {
   async login(credentials: LoginCredentials): Promise<ApiResponse<AuthResponse>> {
-    const response = await apiCall<{authToken: string}>(
+    const response = await apiCall<{authToken: string, user?: User}>(
       '/auth/login',
       {
         method: 'POST',
@@ -35,7 +35,19 @@ class AuthService {
       // Store the token
       localStorage.setItem('attendmate_token', response.data.authToken);
       
-      // Try to get user profile, but don't fail login if it doesn't work
+      // If user data is included in login response, use it
+      if (response.data.user) {
+        localStorage.setItem('attendmate_user', JSON.stringify(response.data.user));
+        return {
+          success: true,
+          data: {
+            user: response.data.user,
+            token: response.data.authToken
+          }
+        };
+      }
+      
+      // Try to get user profile with the new token
       try {
         const profileResponse = await this.getProfile();
         if (profileResponse.success && profileResponse.data) {
@@ -49,27 +61,24 @@ class AuthService {
           };
         }
       } catch (error) {
-        console.log('Profile fetch failed, continuing with token only:', error);
+        console.log('Profile fetch failed:', error);
       }
       
-      // If profile fetch fails, create a basic user object
-      const basicUser = {
-        id: 0,
-        name: 'User',
-        email: credentials.email,
-        role: 'student' as const,
-        phone: '',
-        institution_id: '',
-        class_id: undefined,
-        created_at: new Date().toISOString(),
-        active: true
-      };
-      
-      localStorage.setItem('attendmate_user', JSON.stringify(basicUser));
+      // If all else fails, return success with token only and let the app handle it
       return {
         success: true,
         data: {
-          user: basicUser,
+          user: {
+            id: 0,
+            name: 'User',
+            email: credentials.email,
+            role: 'student' as const, // Default fallback
+            phone: '',
+            institution_id: '',
+            class_id: undefined,
+            created_at: new Date().toISOString(),
+            active: true
+          },
           token: response.data.authToken
         }
       };

@@ -79,6 +79,14 @@ export interface Faculty {
   department: string;
 }
 
+export interface AttendanceStats {
+  total_sessions: number;
+  present: number;
+  late: number;
+  absent: number;
+  attendance_percentage: number;
+}
+
 // Generic API call function
 export async function apiCall<T = any>(
   endpoint: string,
