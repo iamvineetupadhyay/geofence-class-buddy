@@ -1,57 +1,34 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { MapPin, Users, BookOpen, Trophy, MessageSquare, Calendar } from "lucide-react";
+import { MapPin, Users, BookOpen, Trophy, MessageSquare, Calendar, Play } from "lucide-react";
 import heroImage from "@/assets/hero-attendmate.jpg";
 
 const AttendMateHero = () => {
   const features = [
-    {
-      icon: MapPin,
-      title: "Geofencing Attendance",
-      description: "Track attendance seamlessly with location-based validation."
-    },
-    {
-      icon: Users,
-      title: "Multi-Role Access",
-      description: "Dedicated dashboards for students, teachers, and admins."
-    },
-    {
-      icon: BookOpen,
-      title: "Digital Notes",
-      description: "Organized, subject-wise resources for smarter learning."
-    },
-    {
-      icon: Trophy,
-      title: "Gamification",
-      description: "Motivate with streaks, badges, and leaderboards."
-    },
-    {
-      icon: MessageSquare,
-      title: "Communication",
-      description: "Announcements and doubt discussions made easy."
-    },
-    {
-      icon: Calendar,
-      title: "Event Management",
-      description: "Stay updated with timelines and institutional events."
-    }
+    { icon: MapPin, title: "Geofencing Attendance", description: "Track attendance seamlessly with location-based validation." },
+    { icon: Users, title: "Multi-Role Access", description: "Dedicated dashboards for students, teachers, and admins." },
+    { icon: BookOpen, title: "Digital Notes", description: "Organized, subject-wise resources for smarter learning." },
+    { icon: Trophy, title: "Gamification", description: "Motivate with streaks, badges, and leaderboards." },
+    { icon: MessageSquare, title: "Communication", description: "Announcements and doubt discussions made easy." },
+    { icon: Calendar, title: "Event Management", description: "Stay updated with timelines and institutional events." }
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-background">
       {/* Navbar */}
-      <nav className="flex items-center justify-between px-8 py-6 bg-background/30 backdrop-blur-md sticky top-0 z-50 border-b border-border/40">
+      <nav className="flex items-center justify-between px-8 py-6 sticky top-0 z-50 bg-background/70 backdrop-blur-md shadow-sm">
         <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 bg-gradient-primary rounded-lg flex items-center justify-center shadow-sm">
+          <div className="w-9 h-9 bg-gradient-primary rounded-lg flex items-center justify-center shadow-md">
             <MapPin className="w-5 h-5 text-primary-foreground" />
           </div>
           <span className="text-xl font-bold tracking-tight text-foreground">AttendMate</span>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" className="text-foreground hover:bg-background/20 transition-colors">
+        <div className="flex items-center space-x-4">
+          <Button variant="ghost" className="relative group text-foreground hover:bg-transparent">
             About
+            <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary group-hover:w-full transition-all"></span>
           </Button>
-          <Button className="bg-gradient-primary text-lg px-6 shadow-lg hover:opacity-90 transition-all">
+          <Button className="bg-gradient-primary text-lg px-6 shadow-lg hover:shadow-glow transition-all">
             Login
           </Button>
         </div>
@@ -64,8 +41,8 @@ const AttendMateHero = () => {
           <div className="space-y-10">
             <div className="space-y-6">
               <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight leading-tight text-foreground">
-                Smart Attendance
-                <span className="block bg-gradient-primary bg-clip-text text-transparent">
+                Smart Attendance{" "}
+                <span className="block bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
                   Simplified for Everyone
                 </span>
               </h1>
@@ -77,25 +54,25 @@ const AttendMateHero = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-5">
-              <Button size="lg" className="bg-gradient-primary hover:opacity-90 shadow-md text-lg px-10 py-6 rounded-xl">
+              <Button size="lg" className="bg-gradient-primary hover:opacity-95 shadow-md text-lg px-10 py-6 rounded-xl ring-2 ring-transparent hover:ring-primary/40 transition-all">
                 Get Started
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-10 py-6 rounded-xl border-2 hover:bg-background/30">
-                Watch Demo
+              <Button size="lg" variant="outline" className="text-lg px-10 py-6 rounded-xl border-2 hover:bg-background/30 flex items-center gap-2">
+                <Play className="w-5 h-5" /> Watch Demo
               </Button>
             </div>
 
             {/* Stats */}
-            <div className="flex items-center gap-12 pt-4">
-              <div className="text-center">
+            <div className="flex items-center gap-8 pt-6 bg-background/50 backdrop-blur-sm rounded-xl p-6 shadow-sm w-fit">
+              <div className="text-center px-4">
                 <div className="text-3xl font-extrabold text-primary">10K+</div>
                 <div className="text-sm text-muted-foreground">Active Students</div>
               </div>
-              <div className="text-center">
+              <div className="text-center px-4">
                 <div className="text-3xl font-extrabold text-secondary">500+</div>
                 <div className="text-sm text-muted-foreground">Institutions</div>
               </div>
-              <div className="text-center">
+              <div className="text-center px-4">
                 <div className="text-3xl font-extrabold text-accent">99.9%</div>
                 <div className="text-sm text-muted-foreground">Accuracy</div>
               </div>
@@ -129,10 +106,10 @@ const AttendMateHero = () => {
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className="p-8 bg-background/40 backdrop-blur-sm border border-border/40 hover:shadow-lg hover:bg-background/60 transition-all rounded-2xl"
+                className="p-8 bg-background/40 backdrop-blur-sm border border-border/40 rounded-2xl hover:-translate-y-1 hover:shadow-lg transition-transform duration-300"
               >
                 <div className="flex items-start gap-5">
-                  <div className="flex-shrink-0 w-14 h-14 bg-gradient-primary rounded-xl flex items-center justify-center shadow-sm">
+                  <div className="flex-shrink-0 w-14 h-14 bg-gradient-primary rounded-xl flex items-center justify-center shadow-md">
                     <feature.icon className="w-7 h-7 text-primary-foreground" />
                   </div>
                   <div className="space-y-2">
