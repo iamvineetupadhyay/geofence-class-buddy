@@ -175,7 +175,12 @@ class AuthService {
       return null;
     }
     try {
-      return JSON.parse(userStr);
+      const user = JSON.parse(userStr);
+      // Ensure role is always defined
+      if (user && !user.role) {
+        user.role = 'student';
+      }
+      return user;
     } catch (error) {
       console.error('Error parsing user data:', error);
       localStorage.removeItem('attendmate_user');

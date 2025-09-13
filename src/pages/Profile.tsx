@@ -94,18 +94,18 @@ const Profile = () => {
                 {user.name}
               </CardTitle>
               <CardDescription>
-                <Badge
-                  variant={
-                    user.role === "admin"
-                      ? "default"
-                      : user.role === "teacher"
-                      ? "secondary"
-                      : "outline"
-                  }
-                  className="px-3 py-1 rounded-full shadow-soft"
-                >
-                  {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                </Badge>
+                 <Badge
+                   variant={
+                     user.role === "admin"
+                       ? "default"
+                       : user.role === "teacher"
+                       ? "secondary"
+                       : "outline"
+                   }
+                   className="px-3 py-1 rounded-full shadow-soft"
+                 >
+                   {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Student'}
+                 </Badge>
               </CardDescription>
             </div>
             <div className="ml-auto">
@@ -209,17 +209,17 @@ const Profile = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Role:</span>
-                  <Badge
-                    variant={
-                      user.role === "admin"
-                        ? "default"
-                        : user.role === "teacher"
-                        ? "secondary"
-                        : "outline"
-                    }
-                  >
-                    {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                  </Badge>
+                   <Badge
+                     variant={
+                       user.role === "admin"
+                         ? "default"
+                         : user.role === "teacher"
+                         ? "secondary"
+                         : "outline"
+                     }
+                   >
+                     {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Student'}
+                   </Badge>
                 </div>
                 {user.class_id && (
                   <div className="flex justify-between">
