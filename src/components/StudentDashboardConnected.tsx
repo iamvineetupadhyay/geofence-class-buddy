@@ -21,7 +21,11 @@ import { gamificationService, AttendanceStreak, LeaderboardEntry } from "@/servi
 import { useToast } from "@/hooks/use-toast";
 import { Attendance, Note } from "@/lib/api";
 
-const StudentDashboardConnected = () => {
+interface StudentDashboardConnectedProps {
+  onNavigate?: (view: string) => void;
+}
+
+const StudentDashboardConnected = ({ onNavigate }: StudentDashboardConnectedProps) => {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const [attendance, setAttendance] = useState<Attendance[]>([]);
@@ -209,15 +213,27 @@ const StudentDashboardConnected = () => {
             <MapPin className="w-6 h-6 mb-2" />
             Mark Attendance
           </Button>
-          <Button variant="outline" className="h-20 flex-col">
+          <Button 
+            variant="outline" 
+            className="h-20 flex-col"
+            onClick={() => onNavigate?.('notes')}
+          >
             <BookOpen className="w-6 h-6 mb-2" />
             View Notes
           </Button>
-          <Button variant="outline" className="h-20 flex-col">
+          <Button 
+            variant="outline" 
+            className="h-20 flex-col"
+            onClick={() => onNavigate?.('doubts')}
+          >
             <MessageSquare className="w-6 h-6 mb-2" />
             Submit Doubt
           </Button>
-          <Button variant="outline" className="h-20 flex-col">
+          <Button 
+            variant="outline" 
+            className="h-20 flex-col"
+            onClick={() => onNavigate?.('leaderboard')}
+          >
             <Trophy className="w-6 h-6 mb-2" />
             Leaderboard
           </Button>

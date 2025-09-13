@@ -10,6 +10,8 @@ import Profile from "@/pages/Profile";
 import AttendancePage from "@/pages/AttendancePage";
 import NotesPage from "@/pages/NotesPage";
 import LeaderboardPage from "@/pages/LeaderboardPage";
+import DoubtsPage from "@/pages/DoubtsPage";
+import EventsPage from "@/pages/EventsPage";
 import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
@@ -89,7 +91,7 @@ const Index = () => {
         <div className="flex-1 ml-64">
           {currentView === 'home' && (
             <>
-              {user.role === 'student' && <StudentDashboardConnected />}
+              {user.role === 'student' && <StudentDashboardConnected onNavigate={handleNavigate} />}
               {user.role === 'teacher' && <TeacherDashboard />}
               {user.role === 'admin' && <AdminDashboard />}
             </>
@@ -102,9 +104,9 @@ const Index = () => {
           {currentView === 'communication' && <div className="p-8">Communication feature coming soon...</div>}
           {currentView === 'analytics' && <div className="p-8">Analytics feature coming soon...</div>}
           {currentView === 'users' && <div className="p-8">User management coming soon...</div>}
-          {currentView === 'events' && <div className="p-8">Events feature coming soon...</div>}
           {currentView === 'settings' && <div className="p-8">Settings coming soon...</div>}
-          {currentView === 'doubts' && <div className="p-8">Doubts feature coming soon...</div>}
+          {currentView === 'doubts' && <DoubtsPage />}
+          {currentView === 'events' && <EventsPage />}
           {currentView === 'faculty' && <div className="p-8">Faculty directory coming soon...</div>}
         </div>
       </div>
