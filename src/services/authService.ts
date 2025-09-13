@@ -64,22 +64,24 @@ class AuthService {
         console.log('Profile fetch failed:', error);
       }
       
-      // If all else fails, return success with token only and let the app handle it
+      // If all else fails, construct a minimal user from credentials and persist it
+      const fallbackUser: User = {
+        id: 0,
+        name: 'User',
+        email: credentials.email,
+        role: 'student' as const, // Default fallback
+        phone: '',
+        institution_id: '',
+        class_id: undefined,
+        created_at: new Date().toISOString(),
+        active: true,
+      };
+      localStorage.setItem('attendmate_user', JSON.stringify(fallbackUser));
       return {
         success: true,
         data: {
-          user: {
-            id: 0,
-            name: 'User',
-            email: credentials.email,
-            role: 'student' as const, // Default fallback
-            phone: '',
-            institution_id: '',
-            class_id: undefined,
-            created_at: new Date().toISOString(),
-            active: true
-          },
-          token: response.data.authToken
+          user: fallbackUser,
+          token: response.data.authToken,
         }
       };
     }
@@ -91,8 +93,8 @@ class AuthService {
   }
 
   async register(userData: RegisterData): Promise<ApiResponse<AuthResponse>> {
-    const response = await apiCall<AuthResponse>(
-      '/auth/signup',  // ✅ updated endpoint
+    const response = await apiCall<any>(
+      '/auth/signup',
       {
         method: 'POST',
         body: JSON.stringify(userData),
@@ -101,15 +103,59 @@ class AuthService {
     );
 
     if (response.success && response.data) {
-      localStorage.setItem('attendmate_token', response.data.token);
-      localStorage.setItem('attendmate_user', JSON.stringify(response.data.user));
+      const token: string | undefined = response.data.token || response.data.authToken;
+      const user: User | undefined = response.data.user;
+
+      if (token) {
+        localStorage.setItem('attendmate_token', token);
+      }
+
+      if (user) {
+        localStorage.setItem('attendmate_user', JSON.stringify(user));
+        return { success: true, data: { user, token: token || '' } };
+      }
+
+      // Try to fetch profile if user wasn't returned in the signup response
+      try {
+        const profileResp = await this.getProfile();
+        if (profileResp.success && profileResp.data) {
+          localStorage.setItem('attendmate_user', JSON.stringify(profileResp.data));
+          return { success: true, data: { user: profileResp.data, token: token || '' } };
+        }
+      } catch (e) {
+        console.log('Signup profile fetch failed:', e);
+      }
+
+      // Fallback to the submitted data so the app can proceed (role-based UI works)
+      const fallbackUser: User = {
+        id: 0,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        phone: userData.phone,
+        institution_id: userData.institution_id,
+        class_id: userData.class_id,
+        created_at: new Date().toISOString(),
+        active: true,
+      };
+      localStorage.setItem('attendmate_user', JSON.stringify(fallbackUser));
+      return { success: true, data: { user: fallbackUser, token: token || '' } };
     }
 
-    return response;
+    return {
+      success: false,
+      error: response.error || 'Registration failed',
+    };
   }
 
   async getProfile(): Promise<ApiResponse<User>> {
-    return apiCall<User>('/profile', {}, true);
+    // Try common Xano auth profile endpoints to ensure role is retrieved
+    const endpoints = ['/profile', '/me', '/auth/me', '/users/me'];
+    for (const ep of endpoints) {
+      const res = await apiCall<User>(ep, {}, true);
+      if (res.success && res.data) return res;
+    }
+    return { success: false, error: 'Profile fetch failed' };
   }
 
   async updateProfile(userData: Partial<User>): Promise<ApiResponse<User>> {

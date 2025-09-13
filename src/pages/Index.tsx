@@ -25,6 +25,13 @@ const Index = () => {
     }
   }, []);
 
+  // Auto-redirect to dashboard whenever a valid user is set
+  useEffect(() => {
+    if (user) {
+      setCurrentView('home');
+    }
+  }, [user]);
+
   const handleGetStarted = () => {
     if (user) {
       // If user is logged in, go directly to their dashboard
@@ -50,21 +57,8 @@ const Index = () => {
   };
 
   const handleLoginSuccess = () => {
-    // Force a small delay to ensure localStorage is updated
-    setTimeout(() => {
-      const userStr = localStorage.getItem('attendmate_user');
-      if (userStr && userStr !== 'undefined' && userStr !== 'null') {
-        try {
-          const userData = JSON.parse(userStr);
-          if (userData?.role) {
-            setCurrentView('home');
-          }
-        } catch (error) {
-          console.error('Error parsing user data:', error);
-          localStorage.removeItem('attendmate_user');
-        }
-      }
-    }, 100);
+    // Redirect immediately after successful auth
+    setCurrentView('home');
   };
 
   const handleNavigate = (view: string) => {
@@ -90,7 +84,7 @@ const Index = () => {
   // If user is logged in, show navigation and appropriate page
   if (user) {
     return (
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen bg-gradient-hero/10">
         <Navigation currentView={currentView} onNavigate={handleNavigate} />
         <div className="flex-1 ml-64">
           {currentView === 'home' && (
