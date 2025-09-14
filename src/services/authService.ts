@@ -22,54 +22,54 @@ export interface AuthResponse {
 
 class AuthService {
   async login(credentials: LoginCredentials): Promise<ApiResponse<AuthResponse>> {
-    const response = await apiCall<{authToken: string, user?: User}>(
+    const response = await apiCall<any>(
       '/auth/login',
       {
         method: 'POST',
         body: JSON.stringify(credentials),
       },
-      true // Use auth API
+      true
     );
 
-    if (response.success && response.data?.authToken) {
-      // Store the token
-      localStorage.setItem('attendmate_token', response.data.authToken);
-      
-      // If user data is included in login response, use it
-      if (response.data.user) {
-        localStorage.setItem('attendmate_user', JSON.stringify(response.data.user));
-        return {
-          success: true,
-          data: {
-            user: response.data.user,
-            token: response.data.authToken
-          }
-        };
+    if (response.success && response.data) {
+      const raw = response.data as any;
+      const token: string | undefined =
+        raw.token || raw.authToken || raw.auth_token || raw.access_token || raw.jwt;
+      const user: User | undefined = raw.user || raw.profile || raw.me;
+
+      if (token) {
+        localStorage.setItem('attendmate_token', token);
       }
-      
+
+      if (user) {
+        localStorage.setItem('attendmate_user', JSON.stringify(user));
+        return { success: true, data: { user, token: token || '' } };
+      }
+
       // Try to get user profile with the new token
       try {
         const profileResponse = await this.getProfile();
         if (profileResponse.success && profileResponse.data) {
           localStorage.setItem('attendmate_user', JSON.stringify(profileResponse.data));
-          return {
-            success: true,
-            data: {
-              user: profileResponse.data,
-              token: response.data.authToken
-            }
-          };
+          return { success: true, data: { user: profileResponse.data, token: token || '' } };
         }
       } catch (error) {
         console.log('Profile fetch failed:', error);
       }
-      
-      // If all else fails, construct a minimal user from credentials and persist it
+
+      // Preserve any existing user (keeps correct role from prior signup/session)
+      const existingUser = this.getCurrentUser();
+      if (existingUser) {
+        localStorage.setItem('attendmate_user', JSON.stringify(existingUser));
+        return { success: true, data: { user: existingUser, token: token || '' } };
+      }
+
+      // Final minimal fallback (no role assumption beyond student)
       const fallbackUser: User = {
         id: 0,
         name: 'User',
         email: credentials.email,
-        role: 'student' as const, // Default fallback
+        role: 'student',
         phone: '',
         institution_id: '',
         class_id: undefined,
@@ -77,13 +77,7 @@ class AuthService {
         active: true,
       };
       localStorage.setItem('attendmate_user', JSON.stringify(fallbackUser));
-      return {
-        success: true,
-        data: {
-          user: fallbackUser,
-          token: response.data.authToken,
-        }
-      };
+      return { success: true, data: { user: fallbackUser, token: token || '' } };
     }
 
     return {
@@ -175,11 +169,7 @@ class AuthService {
       return null;
     }
     try {
-      const user = JSON.parse(userStr);
-      // Ensure role is always defined
-      if (user && !user.role) {
-        user.role = 'student';
-      }
+      const user = JSON.parse(userStr) as User;
       return user;
     } catch (error) {
       console.error('Error parsing user data:', error);
