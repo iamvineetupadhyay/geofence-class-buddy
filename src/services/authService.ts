@@ -35,6 +35,7 @@ class AuthService {
       const raw = response.data as any;
       const token: string | undefined =
         raw.token || raw.authToken || raw.auth_token || raw.access_token || raw.jwt;
+      const existingUser = this.getCurrentUser();
       const user: User | undefined = raw.user || raw.profile || raw.me;
 
       if (token) {
@@ -42,23 +43,35 @@ class AuthService {
       }
 
       if (user) {
-        localStorage.setItem('attendmate_user', JSON.stringify(user));
-        return { success: true, data: { user, token: token || '' } };
+        // Preserve previously known role if Xano doesn't return it
+        const merged: User = {
+          ...(existingUser || {} as User),
+          ...user,
+          role: (user as any).role || existingUser?.role || 'student',
+        } as User;
+        localStorage.setItem('attendmate_user', JSON.stringify(merged));
+        return { success: true, data: { user: merged, token: token || '' } };
       }
 
       // Try to get user profile with the new token
       try {
         const profileResponse = await this.getProfile();
         if (profileResponse.success && profileResponse.data) {
-          localStorage.setItem('attendmate_user', JSON.stringify(profileResponse.data));
-          return { success: true, data: { user: profileResponse.data, token: token || '' } };
+          const existing = existingUser || this.getCurrentUser();
+          const profileUser = profileResponse.data as User;
+          const merged: User = {
+            ...(existing || {} as User),
+            ...profileUser,
+            role: (profileUser as any).role || existing?.role || 'student',
+          } as User;
+          localStorage.setItem('attendmate_user', JSON.stringify(merged));
+          return { success: true, data: { user: merged, token: token || '' } };
         }
       } catch (error) {
         console.log('Profile fetch failed:', error);
       }
 
       // Preserve any existing user (keeps correct role from prior signup/session)
-      const existingUser = this.getCurrentUser();
       if (existingUser) {
         localStorage.setItem('attendmate_user', JSON.stringify(existingUser));
         return { success: true, data: { user: existingUser, token: token || '' } };
