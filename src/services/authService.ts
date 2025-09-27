@@ -1,9 +1,14 @@
-import { apiCall, User, ApiResponse } from '@/lib/api';
-
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
+import { auth, db } from '@/firebase';
+import { 
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  updateProfile as firebaseUpdateProfile,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { AppUser } from '@/types';
 
 export interface RegisterData {
   name: string;
@@ -15,193 +20,125 @@ export interface RegisterData {
   class_id?: number;
 }
 
-export interface AuthResponse {
-  user: User;
-  token: string;
-}
-
 class AuthService {
-  async login(credentials: LoginCredentials): Promise<ApiResponse<AuthResponse>> {
-    const response = await apiCall<any>(
-      '/auth/login',
-      {
-        method: 'POST',
-        body: JSON.stringify(credentials),
-      },
-      true
-    );
-
-    if (response.success && response.data) {
-      const raw = response.data as any;
-      const token: string | undefined =
-        raw.token || raw.authToken || raw.auth_token || raw.access_token || raw.jwt;
-      const existingUser = this.getCurrentUser();
-      const user: User | undefined = raw.user || raw.profile || raw.me;
-
-      if (token) {
-        localStorage.setItem('attendmate_token', token);
-      }
-
-      if (user) {
-        // Preserve previously known role if Xano doesn't return it
-        const merged: User = {
-          ...(existingUser || {} as User),
-          ...user,
-          role: (user as any).role || existingUser?.role || 'student',
-        } as User;
-        localStorage.setItem('attendmate_user', JSON.stringify(merged));
-        return { success: true, data: { user: merged, token: token || '' } };
-      }
-
-      // Try to get user profile with the new token
-      try {
-        const profileResponse = await this.getProfile();
-        if (profileResponse.success && profileResponse.data) {
-          const existing = existingUser || this.getCurrentUser();
-          const profileUser = profileResponse.data as User;
-          const merged: User = {
-            ...(existing || {} as User),
-            ...profileUser,
-            role: (profileUser as any).role || existing?.role || 'student',
-          } as User;
-          localStorage.setItem('attendmate_user', JSON.stringify(merged));
-          return { success: true, data: { user: merged, token: token || '' } };
-        }
-      } catch (error) {
-        console.log('Profile fetch failed:', error);
-      }
-
-      // Preserve any existing user (keeps correct role from prior signup/session)
-      if (existingUser) {
-        localStorage.setItem('attendmate_user', JSON.stringify(existingUser));
-        return { success: true, data: { user: existingUser, token: token || '' } };
-      }
-
-      // Final minimal fallback (no role assumption beyond student)
-      const fallbackUser: User = {
-        id: 0,
-        name: 'User',
-        email: credentials.email,
-        role: 'student',
-        phone: '',
-        institution_id: '',
-        class_id: undefined,
-        created_at: new Date().toISOString(),
-        active: true,
-      };
-      localStorage.setItem('attendmate_user', JSON.stringify(fallbackUser));
-      return { success: true, data: { user: fallbackUser, token: token || '' } };
-    }
-
-    return {
-      success: false,
-      error: response.error || 'Login failed'
-    };
+  getCurrentUser() {
+    return auth.currentUser;
   }
 
-  async register(userData: RegisterData): Promise<ApiResponse<AuthResponse>> {
-    const response = await apiCall<any>(
-      '/auth/signup',
-      {
-        method: 'POST',
-        body: JSON.stringify(userData),
-      },
-      true // Use auth API
-    );
+  // 🔹 Register new user and save role
+  async register(userData: RegisterData) {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        userData.email,
+        userData.password
+      );
 
-    if (response.success && response.data) {
-      const token: string | undefined = response.data.token || response.data.authToken;
-      const user: User | undefined = response.data.user;
-
-      if (token) {
-        localStorage.setItem('attendmate_token', token);
+      if (userData.name) {
+        await firebaseUpdateProfile(userCredential.user, { displayName: userData.name });
       }
 
-      if (user) {
-        localStorage.setItem('attendmate_user', JSON.stringify(user));
-        return { success: true, data: { user, token: token || '' } };
-      }
-
-      // Try to fetch profile if user wasn't returned in the signup response
-      try {
-        const profileResp = await this.getProfile();
-        if (profileResp.success && profileResp.data) {
-          localStorage.setItem('attendmate_user', JSON.stringify(profileResp.data));
-          return { success: true, data: { user: profileResp.data, token: token || '' } };
-        }
-      } catch (e) {
-        console.log('Signup profile fetch failed:', e);
-      }
-
-      // Fallback to the submitted data so the app can proceed (role-based UI works)
-      const fallbackUser: User = {
-        id: 0,
-        name: userData.name,
+      const appUser: AppUser = {
+        uid: userCredential.user.uid,
         email: userData.email,
+        displayName: userData.name,
+        photoURL: userCredential.user.photoURL || '',
         role: userData.role,
+      };
+
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
+        ...appUser,
         phone: userData.phone,
         institution_id: userData.institution_id,
-        class_id: userData.class_id,
-        created_at: new Date().toISOString(),
-        active: true,
-      };
-      localStorage.setItem('attendmate_user', JSON.stringify(fallbackUser));
-      return { success: true, data: { user: fallbackUser, token: token || '' } };
-    }
+        class_id: userData.class_id || null,
+        createdAt: new Date(),
+      });
 
-    return {
-      success: false,
-      error: response.error || 'Registration failed',
-    };
+      return { success: true, data: appUser };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
   }
 
-  async getProfile(): Promise<ApiResponse<User>> {
-    // Try common Xano auth profile endpoints to ensure role is retrieved
-    const endpoints = ['/profile', '/me', '/auth/me', '/users/me'];
-    for (const ep of endpoints) {
-      const res = await apiCall<User>(ep, {}, true);
-      if (res.success && res.data) return res;
-    }
-    return { success: false, error: 'Profile fetch failed' };
-  }
-
-  async updateProfile(userData: Partial<User>): Promise<ApiResponse<User>> {
-    return apiCall<User>(
-      '/update-profile',
-      {
-        method: 'PUT',
-        body: JSON.stringify(userData),
-      },
-      true
-    );
-  }
-
-  getCurrentUser(): User | null {
-    const userStr = localStorage.getItem('attendmate_user');
-    if (!userStr || userStr === 'undefined' || userStr === 'null') {
-      return null;
-    }
+  // 🔹 Login with email & password
+  async login(email: string, password: string) {
     try {
-      const user = JSON.parse(userStr) as User;
-      return user;
-    } catch (error) {
-      console.error('Error parsing user data:', error);
-      localStorage.removeItem('attendmate_user');
-      return null;
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const docRef = doc(db, 'users', userCredential.user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        return { success: true, data: docSnap.data() as AppUser };
+      }
+
+      return { success: false, error: 'User profile not found in Firestore' };
+    } catch (error: any) {
+      return { success: false, error: error.message };
     }
   }
 
-  getToken(): string | null {
-    return localStorage.getItem('attendmate_token');
+  // 🔹 Google Sign-In
+  async googleSignIn() {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      const docRef = doc(db, 'users', user.uid);
+      const docSnap = await getDoc(docRef);
+
+      let appUser: AppUser;
+
+      if (!docSnap.exists()) {
+        appUser = {
+          uid: user.uid,
+          email: user.email || '',
+          displayName: user.displayName || '',
+          photoURL: user.photoURL || '',
+          role: 'student', // default
+        };
+
+        await setDoc(docRef, {
+          ...appUser,
+          phone: '',
+          institution_id: '',
+          class_id: null,
+          createdAt: new Date(),
+        });
+      } else {
+        appUser = docSnap.data() as AppUser;
+      }
+
+      return { success: true, data: appUser };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
   }
 
-  logout(): void {
-    localStorage.removeItem('attendmate_token');
-    localStorage.removeItem('attendmate_user');
+  // 🔹 Logout
+  async logout() {
+    try {
+      await signOut(auth);
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
   }
 
-  isAuthenticated(): boolean {
-    return !!this.getToken();
+  // 🔹 Update profile
+  async updateProfile(updates: { displayName?: string; photoURL?: string }) {
+    if (!auth.currentUser) return { success: false, error: 'No user logged in' };
+    try {
+      await firebaseUpdateProfile(auth.currentUser, updates);
+
+      const docRef = doc(db, 'users', auth.currentUser.uid);
+      await setDoc(docRef, updates, { merge: true });
+
+      const updatedDoc = await getDoc(docRef);
+      return { success: true, data: updatedDoc.data() as AppUser };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
   }
 }
 
